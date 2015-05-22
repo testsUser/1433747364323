@@ -2,9 +2,8 @@ describe('phones,endpoint', function ()
 {
     'use strict';
 
-    var superTest = require('supertest')(require('../../app/index.js'));
+    var DAO = require('../../app/index.js');
     var testHelper = require('../testHelper');
-    var sha1 = require('sha1');
     var phones = [{
         model: 'Nokia',
         brand: 'Test Phone',
@@ -32,7 +31,7 @@ describe('phones,endpoint', function ()
     {
         testHelper.closeDBConnection(done);
     });
-    describe('GET /api/phones', function ()
+    describe('DAO\'s search method', function ()
     {
         describe('when we NOT add query params', function ()
         {

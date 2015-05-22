@@ -35,14 +35,6 @@
 
     }
 
-    function getDetails(phoneId)
-    {
-        return Model.findOneQ({_id: phoneId}).then(function (result)
-        {
-            return {results: result};
-        });
-    }
-
     function removePhone(phoneId)
     {
         return Model.findByIdAndRemoveQ(phoneId);
@@ -50,9 +42,7 @@
 
     module.exports = {
         removePhone: removePhone,
-        getDetails: getDetails,
         createNewOrUpdate: createNewOrUpdate,
-        search: search,
-        schema: phoneSchema
+        search: search
     };
 })();
