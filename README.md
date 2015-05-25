@@ -1,7 +1,7 @@
 #MongoDB - search, sort and pagination
 
 ##Summary
-DAO's method designed to retrieving data from mongo database. There are ability to performing searching in collection, sort results and paginate it using only mongo queries.
+DAO's method designed to receiving data from mongo database. There is ability to perform searching in collection, sort results and paginate it using only mongo queries.
 
 ##Goal
 Your goal consist in write body of DAO's search method. Use **/app/DAO/phoneDAO** file for your solution. Searching operation is performing on collection which has structure:
@@ -24,6 +24,6 @@ You need to fill our DAO method in accordance to guidelines:
 
  
 ##Setup
-Run `npm install` before start.
+Type `npm install` before start.
 
-Run `grunt test` to run unit tests. Note that you have to run `mongod` on your system before running rests.
+Type `grunt test` to run unit tests. Note that you have to run `mongod` on your system before running rests.
