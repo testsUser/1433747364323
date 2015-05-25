@@ -1,30 +1,29 @@
-#MongoDB - sort, search and pagination
+#MongoDB - search, sort and pagination
 
 ##Summary
-Backend app providing endpoints able to return sorted data in parts.
-
-Application has got already configured endpoints for CRUD operations and three DAO methods. We need DAO's find method to be configured in a way that would allow to sort, search and paginate data depending on received query.
+DAO's method designed to retrieving data from mongo database. There are ability to performing searching in collection, sort results and paginate it using only mongo queries.
 
 ##Goal
-Your goal is to write body of DAO's find method. Possible properties of query are:
+Your goal consist in write body of DAO's search method. Use **/app/DAO/phoneDAO** file for your solution. Searching operation is performing on collection which has structure:
 
-``` sortBy, orderBy, skip, limit ```
+```
+{
+    model: String,
+    brand: String,
+    state: String
+}
+```
 
-where `skip` and `limit` can be positive signed numbers, `orderBy` can be *ASC* or *DESC* strings and `sortBy` - name of field to sort by.
-By default request for data should return only one, first record from sorted ascending by id data.
-Structure of response.body should be like:
+Our DAO method accepts as parameter object whose properties could be from range of `search, skip, limit, orderBy, sortBy` where `search` is string to search for, `orderBy` can be 'ASC or 'DESC' and `sortBy` is name of field to sort by. Properties `skip` and `limit` are numbers.
 
-```{ result: [], total: x }```
+You need to fill our DAO method in accordance to guidelines:
 
-where under `result` are returned data and under `total` are number of all records in collection.
+- it should return promise,
+- by default result of search must be sorted `ascending` by `_id` field and must contain two elements from collection.
+- structure of returning data should have structure like: `{ results: [], total: int }`, where results is found data and total is number of all elements in collection.
 
-##Documentation
-* [mongoose](http://mongoosejs.com/)
  
 ##Setup
 Run `npm install` before start.
 
 Run `grunt test` to run unit tests. Note that you have to run `mongod` on your system before running rests.
- 
- 
- Good luck!

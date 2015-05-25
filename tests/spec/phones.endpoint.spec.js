@@ -1,4 +1,4 @@
-describe('phones,endpoint', function ()
+describe('DAO\'s search method', function ()
 {
     'use strict';
 
@@ -7,18 +7,19 @@ describe('phones,endpoint', function ()
     var phones = [{
         model: 'Nokia',
         brand: 'Test Phone',
-        stan: 'New'
+        state: 'New'
         },
         {
             model: 'Mock',
             brand: 'Super Phone',
-            stan: 'Used'
+            state: 'New'
         },
         {
             model: 'Time Phone',
             brand: 'Test Phone',
-            stan: 'New'
+            state: 'New'
         }];
+
     beforeEach(function (done)
     {
         testHelper.openDBConnection();
@@ -27,225 +28,270 @@ describe('phones,endpoint', function ()
             done();
         });
     });
+
     afterEach(function (done)
     {
         testHelper.closeDBConnection(done);
     });
-    describe('DAO\'s search method', function ()
-    {
-        describe('when we NOT add query params', function ()
-        {
-            it('should response 200 and response have 1 elements', function (done)
-            {
-                superTest.get('/api/phones').expect(200).end(function (error, response)
-                {
-                    if (response.body.results && testHelper.isEquals(phones[0], response.body.results[0], ['_id', '__v'])) {
-                        done();
-                    } else {
-                        done('Results is NOT equals');
-                    }
-                });
-            });
-        });
-        describe('when we add query params', function ()
-        {
-            describe('when set limit to 2 and skip to 1', function ()
-            {
-                it('should pagination response', function (done)
-                {
-                    superTest.get('/api/phones?skip=1&limit=2').expect(200).end(function (error, response)
-                    {
-                        var expected = phones.slice(1);
-                        if (response.body.results && 3 === response.body.total && testHelper.isEquals(expected, response.body.results, ['_id', '__v'])) {
-                            done();
-                        } else {
-                            done('Results is NOT equals');
-                        }
-                    });
-                });
-            });
-            describe('when set limit to 1 and limit to 1', function ()
-            {
-                it('should pagination response', function (done)
-                {
-                    superTest.get('/api/phones?skip=1&limit=1').expect(200).end(function (error, response)
-                    {
-                        if (response.body.results && 3 === response.body.total && testHelper.isEquals(phones[1], response.body.results[0], ['_id', '__v'])) {
-                            done();
-                        } else {
-                            done('Results is NOT equals');
-                        }
-                    });
-                });
-            });
-            describe('when set sortBy to model and orderBy to DESC', function ()
-            {
-                it('should sort elements in array DESC by model property', function (done)
-                {
-                    superTest.get('/api/phones?limit=3&sortBy=model&orderBy=DESC').expect(200).end(function (error, response)
-                    {
-                        phones.sort(function (a, b)
-                        {
-                            if (a.model < b.model) {
-                                return 1;
-                            }
-                            if (a.model > b.model) {
-                                return -1;
-                            }
-                            return 0;
-                        });
-                        if (response.body.results && 3 === response.body.total && testHelper.isEquals(phones, response.body.results, ['_id', '__v'])) {
-                            done();
-                        } else {
-                            done('Results is NOT equals');
-                        }
-                    });
-                });
-            });
-        });
-    });
-    describe('POST /api/phones', function ()
-    {
-        var phone = {model: 'New phones', brand: 'new brand mock'};
-        describe('when we add one element without _id', function ()
-        {
-            beforeEach(function (done)
-            {
-                superTest.post('/api/phones').send(phone).end(done);
-            });
 
-            it('should response 201 and this element', function (done)
-            {
-                superTest.post('/api/phones').send(phone).expect(201).end(function (error, response)
-                {
-                    if (response.body.results && testHelper.isEquals(phone, response.body.results, ['_id', '__v'])) {
-                        done();
-                    } else {
-                        done('Results is NOT equals');
-                    }
-                });
-            });
+    it('should return promise', function (done)
+    {
+        if (testHelper.isPromise( DAO.search({}) )) {
+            done();
+        } else {
+            done('Return is NOT promise');
+        }
+    });
 
-            it('should response array with 2 element', function (done)
-            {
-                superTest.get('/api/phones?skip=0&limit=2').expect(200).end(function (error, response)
-                {
-                    phones.push(phone);
-                    if (2 === response.body.results.length && 4 === response.body.total &&
-                            testHelper.isEquals(phones[0], response.body.results[0], ['_id', '__v']) &&
-                            testHelper.isEquals(phones[1], response.body.results[1], ['_id', '__v'])) {
-                        done();
-                    } else {
-                        done('Results is NOT equals');
-                    }
-                });
-            });
-        });
-        describe('when we update element in db', function ()
-        {
-            beforeEach(function (done)
-            {
-                superTest.get('/api/phones').expect(200).end(function (error, response)
-                {
-                    phone = response.body.results[0];
-                    done();
-                });
-            });
-            it('should update this element in db', function (done)
-            {
-                phone.model = 'Test test';
-                phone.brand = 'mock mock';
-                superTest.post('/api/phones').send(phone).end(function ()
-                {
-                    superTest.get('/api/phones/' + phone._id).expect(200).end(function (error, response)
-                    {
-                        if (response.body.results && testHelper.isEquals(phone, response.body.results)) {
-                            done();
-                        } else {
-                            done('Results is NOT equals');
-                        }
-                    });
-                });
-            });
-        });
-    });
-    describe('GET /api/phones/:id', function ()
+    it('should returned data have proper body structure', function (done)
     {
-        describe('when we get id first element in the array', function ()
+        DAO.search({}).then(function(data)
         {
-            var phoneId, phone;
-            beforeEach(function (done)
-            {
-                superTest.get('/api/phones').end(function (error, response)
-                {
-                    phone = response.body.results[0];
-                    phoneId = response.body.results[0]._id;
-                    done();
-                });
-            });
-            it('should response 200 and details first phone', function (done)
-            {
-                superTest.get('/api/phones/' + phoneId).expect(200).end(function (error, response)
-                {
-                    if (response.body.results && testHelper.isEquals(phone, response.body.results)) {
-                        done();
-                    } else {
-                        done('Results is NOT equals');
-                    }
-                });
-            });
-        });
-        describe('when we get id third element in array', function ()
-        {
-            var phoneId, phone;
-            beforeEach(function (done)
-            {
-                superTest.get('/api/phones').end(function (error, response)
-                {
-                    phone = response.body.results[0];
-                    phoneId = response.body.results[0]._id;
-                    done();
-                });
-            });
-            it('should response 200 and details first phone', function (done)
-            {
-                superTest.get('/api/phones/' + phoneId).expect(200).end(function (error, response)
-                {
-                    if (response.body.results && testHelper.isEquals(phone, response.body.results)) {
-                        done();
-                    } else {
-                        done('Results is NOT equals');
-                    }
-                });
-            });
-        });
-    });
-    describe('DELETE /api/phones/:id', function ()
-    {
-        var phoneId;
-        beforeEach(function (done)
-        {
-            superTest.get('/api/phones').end(function (error, response)
-            {
-                phoneId = response.body.results[0]._id;
+            if (data && data.hasOwnProperty('results') && data.hasOwnProperty('total') ) {
                 done();
+            } else {
+                done('Return is NOT promise');
+            }
+        });
+    });
+
+    describe('when don\'t provide query params', function ()
+    {
+        it('should respond with 2 elements', function (done)
+        {
+            DAO.search({}).then( function( data ) {
+                if (testHelper.isEquals( phones.slice( 0, 2 ), data.results, ['_id', '__v'])) {
+                    done();
+                } else {
+                    done('Results is NOT equals');
+                }
             });
         });
-        it('should response 200 and remove this element in db', function (done)
+    });
+
+    describe('search param', function ()
+    {
+        describe('when provided search param equals "Pho"', function()
         {
-            superTest.get('/api/phones').end(function (error, respond)
+            it('should respond with 2 elements', function(done)
             {
-                superTest.delete('/api/phones/' + phoneId).expect(200).end(function (error, response)
-                {
-                    if (testHelper.isEquals({}, response.body)) {
-                        superTest.get('/api/phones').end(function (error, response)
-                        {
-                            if (1 === response.body.results.length && 3 === response.body.total && 4 === respond.body.total) {
-                                done();
-                            } else {
-                                done('Length results is NOT correct');
-                            }
-                        });
+                DAO.search({ search: 'Pho' }).then( function( data ) {
+                    if( testHelper.isEquals( phones.slice( 0, 2 ), data.results, ['_id', '__v']) ) {
+                        done();
+                    }
+                    else {
+                        done('Results is NOT equals')
+                    }
+                });
+            });
+        });
+
+        describe('when provided search param equals "oki"', function()
+        {
+            it( 'should respond with 1 element', function( done )
+            {
+                DAO.search({ search: 'oki' }).then( function( data ) {
+                    if( testHelper.isEquals( [ phones[ 0 ] ], data.results, ['_id', '__v']) ) {
+                        done();
+                    }
+                    else {
+                        done('Results is NOT equals')
+                    }
+                });
+            } );
+        });
+    } );
+
+    describe('pagination params', function()
+    {
+        describe('when provided skip param equals 2', function ()
+        {
+            it('should respond with one, third element', function (done)
+            {
+                DAO.search({ skip: 2 }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice( 2 ), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+
+        describe('when provided skip param equals 3', function ()
+        {
+            it('should respond with nothing', function (done)
+            {
+                DAO.search({ skip: 3 }).then( function( data ) {
+                    if (0 === data.results.length) {
+                        done();
+                    } else {
+                        done('Result is not empty');
+                    }
+                });
+            });
+        });
+
+        describe('when provided skip param equals -1', function ()
+        {
+            it('should respond first two elements', function (done)
+            {
+                DAO.search({ skip: -1 }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice(0, 2), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Result is not empty');
+                    }
+                });
+            });
+        });
+
+        describe('when provided limit param equals 1', function ()
+        {
+            it('should respond with first two elements', function (done)
+            {
+                DAO.search({ limit: 1 }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice( 0, 1 ), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+
+        describe('when provided limit param equals 10', function ()
+        {
+            it('should respond all elements', function (done)
+            {
+                DAO.search({ limit: 10 }).then( function( data ) {
+                    if (testHelper.isEquals( phones, data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Result is not empty');
+                    }
+                });
+            });
+        });
+
+        describe('when provided limit param equals 0', function ()
+        {
+            it('should respond first two elements', function (done)
+            {
+                DAO.search({ limit: 0 }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice(0, 2), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Result is not empty');
+                    }
+                });
+            });
+        });
+
+        describe('when provided limit param equals 3 and skip param equals 1', function ()
+        {
+            it('should respond with two last elements', function (done)
+            {
+                DAO.search({ skip: 1, limit: 3 }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice( 1 ), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Result is not empty');
+                    }
+                });
+            });
+        });
+    });
+
+    describe('sort params', function()
+    {
+        describe('when provided orderBy param equals "ASC"', function ()
+        {
+            it('should respond with 2 elements sorted ascending', function (done)
+            {
+                DAO.search({ orderBy: 'ASC' }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice( 0, 2 ), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+
+        describe('when provided orderBy param equals "DESC"', function ()
+        {
+            it('should respond with 2 elements sorted descending', function (done)
+            {
+                DAO.search({ orderBy: 'DESC' }).then( function( data ) {
+                    var tempPhones = [];
+                    for( var i=phones.length; i>1; ) {
+                        tempPhones.push( phones[ --i ] );
+                    }
+                    if (testHelper.isEquals( tempPhones, data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+
+        describe('when provided orderBy param is invalid', function ()
+        {
+            it('should respond with 2 elements sorted ascending', function (done)
+            {
+                DAO.search({ orderBy: 'other string' }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice( 0, 2 ), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+
+        describe('when provided sortBy param equals "_id"', function ()
+        {
+            it('should respond with 2 elements sorted by _id ', function (done)
+            {
+                DAO.search({ sortBy: '_id' }).then( function( data ) {
+                    if (testHelper.isEquals( phones.slice( 0, 2 ), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+
+        describe('when provided sortBy param equals "model"', function ()
+        {
+            it('should respond with 2 elements sorted by model', function (done)
+            {
+                DAO.search({ sortBy: 'model' }).then( function( data ) {
+
+                    var tempPhones = testHelper.sort( 'model', 1, testHelper.makeCopy( phones ) );
+
+                    if (testHelper.isEquals( tempPhones.slice( 0, 2 ), data.results, ['_id', '__v'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+
+        describe('when provided sortBy param equals "state" and orderBy param equals "DESC"', function ()
+        {
+            it('should respond with 2 elements sorted descending by model', function (done)
+            {
+                DAO.search({ sortBy: 'state', orderBy: 'DESC' }).then( function( data ) {
+
+                    var tempPhones = testHelper.sort( 'state', -1, testHelper.makeCopy( phones ) );
+
+                    if (testHelper.isEquals( tempPhones.slice( 0, 2 ), data.results, ['_id', '__v'])) {
+                        done();
                     } else {
                         done('Results is NOT equals');
                     }
