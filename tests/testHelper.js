@@ -157,11 +157,63 @@
         return equals(expected, results);
     }
 
+    function makeCopy( obj ) {
+        var cpy;
+
+        if( obj instanceof Array ) {
+            cpy = [];
+            for( var i=0; i<obj.length; i++ ) {
+                cpy.push( makeCopy( obj[ i ] ) );
+            }
+        }
+        else {
+            cpy = {};
+            for( var prop in obj ) {
+                if( obj.hasOwnProperty( prop ) ) {
+                    cpy[ prop ] = obj[ prop ];
+                }
+            }
+        }
+
+        return cpy;
+    }
+
+    function sort( key, type, data ) {
+        return data.sort( function ( a, b ) {
+            return a[ key ] > b[ key ] ? type : ( a[ key ] < b[ key ] ? ( -1 * type ) : 0 );
+        });
+    }
+
+    function fromMongo(obj)
+    {
+        var cpy;
+
+        if( obj instanceof Array ) {
+            cpy = [];
+            for( var i=0; i<obj.length; i++ ) {
+                cpy.push( fromMongo( obj[ i ] ) );
+            }
+        }
+        else {
+            cpy =  obj._doc;
+        }
+
+        return cpy;
+    }
+
+    function isPromise( obj ) {
+        return typeof obj.catch === 'function' || typeof obj.then === 'function';
+    }
+
     module.exports = {
         isEquals: isEquals,
         seedPhones: seedPhones,
         seedUsers: seedUsers,
         openDBConnection: openDBConnection,
-        closeDBConnection: closeDBConnection
+        closeDBConnection: closeDBConnection,
+        makeCopy: makeCopy,
+        convertFromMongo: fromMongo,
+        isPromise: isPromise,
+        sort: sort
     };
 })();
