@@ -4,12 +4,12 @@
     var tokens = [];
     var q = require('q');
 
-    function addToken(userId, data)
+    function addToken(userId)
     {
         var defer = q.defer();
         var id = new Date().getTime();
 
-        var token = {_id: id, userId: userId, data: data};
+        var token = {_id: id, userId: userId};
         tokens.push(token);
         defer.resolve(token);
         return defer.promise;

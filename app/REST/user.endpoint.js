@@ -1,14 +1,20 @@
 (function ()
 {
     'use strict';
-
-    var businessContainer = require('../business/business.container');
+    var userDAO = require( '../DAO/userDAO' );
+    var tokenDAO = require( '../DAO/tokenDAO' );
+    var sha1 = require('sha1');
 
     module.exports = function (router)
     {
         router.route('/api/user/auth').post(function (request, response)
         {
-            businessContainer.getUserManager(request).authenticate(request.body.email, request.body.password).then(function (result)
+            userDAO.getByEmail( request.body.email ).then( function( data ) {
+                if( data.password === sha1( request.body.password ) ) {
+                    tokenDAO.addToken( data._id ).then( function(  ) )
+                }
+            } );
+            userManager.authenticate(request.body.email, request.body.password).then(function (result)
             {
                 response.status(200).send({token: result});
             }).catch(function (error)
