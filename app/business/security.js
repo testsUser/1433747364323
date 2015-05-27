@@ -3,10 +3,15 @@
     'use strict';
     var q = require('q');
 
-    function isAuthenticated()
+    function isAuthenticated( authorized )
     {
         var defer = q.defer();
-        defer.reject('UNAUTHORIZED');
+        if( !authorized ) {
+            defer.reject('UNAUTHORIZED');
+        }
+        else {
+            defer.resolve();
+        }
         return defer.promise;
     }
 

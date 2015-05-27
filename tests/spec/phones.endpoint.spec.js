@@ -20,7 +20,7 @@ describe('phones,endpoint', function ()
                             if (error) {
                                 done(error);
                             }
-                            token = 'Token ' + new Buffer(response.body.token.toString()).toString('base64');
+                            token = 'Token ' + response.body.token;
                             done();
                         });
             });
@@ -149,6 +149,8 @@ describe('phones,endpoint', function ()
                 {
                     superTest.get('/api/phones/' + phoneId).set('Authorization', token).expect(200).end(function (error, response)
                     {
+                        console.log('asd');
+                        console.log(response.body);
                         if (response.body.results && testHelper.isEquals(phone, response.body.results)) {
                             done();
                         } else {
@@ -157,7 +159,7 @@ describe('phones,endpoint', function ()
                     });
                 });
             });
-            describe('when we get id third element in array', function ()
+            xdescribe('when we get id third element in array', function ()
             {
                 var phoneId, phone;
                 beforeEach(function (done)
@@ -182,7 +184,7 @@ describe('phones,endpoint', function ()
                 });
             });
         });
-        describe('when user is NOT authorized', function ()
+        xdescribe('when user is NOT authorized', function ()
         {
             it('should response 401', function (done)
             {
@@ -195,7 +197,7 @@ describe('phones,endpoint', function ()
             });
         });
     });
-    describe('DELETE /api/phones/:id', function ()
+    xdescribe('DELETE /api/phones/:id', function ()
     {
         describe('when user is authorized', function ()
         {

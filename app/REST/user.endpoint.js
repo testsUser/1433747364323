@@ -11,12 +11,16 @@
         {
             userDAO.getByEmail( request.body.email ).then( function( data ) {
                 if( data.password === sha1( request.body.password ) ) {
-                    tokenDAO.addToken( data._id ).then( function(  ) )
+                    tokenDAO.addToken( data._id ).then( function( data ) {
+                        response.status(200).send({token: data});
+                    } );
                 }
-            } );
-            userManager.authenticate(request.body.email, request.body.password).then(function (result)
-            {
-                response.status(200).send({token: result});
+                else {
+                    var defer = q.defer();
+                    defer.reject('UNAUTHORIZED');
+                    return defer.promise;
+                }
+
             }).catch(function (error)
             {
                 if ('UNAUTHORIZED' === error) {
@@ -30,7 +34,7 @@
         });
         router.route('/api/user').post(function (request, response)
         {
-            businessContainer.getUserManager(request).addUser(request.body).then(function (result)
+            userDAO.addUser(request.body).then(function (result)
             {
                 response.status(200).send(result);
             });

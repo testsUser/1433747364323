@@ -7,11 +7,11 @@
     function addToken(userId)
     {
         var defer = q.defer();
-        var id = new Date().getTime();
+        var id = new Buffer(new Date().getTime().toString()).toString('base64');
 
         var token = {_id: id, userId: userId};
         tokens.push(token);
-        defer.resolve(token);
+        defer.resolve(token._id);
         return defer.promise;
     }
 
@@ -19,6 +19,7 @@
     {
         var defer = q.defer();
         for (var i = 0; i < tokens.length; i++) {
+            //console.log('- - token', token, '\n- - - asd', tokens[i]._id);
             if (token === tokens[i]._id.toString()) {
                 defer.resolve(tokens[i]);
             } else if (i === tokens.length - 1) {
