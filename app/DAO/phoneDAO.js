@@ -1,9 +1,11 @@
 (function ()
 {
     'use strict';
-    var data = [];
     var q = require('q');
     var sequence = 1;
+    var data = [
+        {_id: sequence++, model: 'New phones', brand: 'new brand mock'}
+    ];
 
     function createNewOrUpdate(phone)
     {

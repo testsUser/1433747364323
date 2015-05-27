@@ -4,6 +4,7 @@
     var userDAO = require( '../DAO/userDAO' );
     var tokenDAO = require( '../DAO/tokenDAO' );
     var sha1 = require('sha1');
+    var q = require('q');
 
     module.exports = function (router)
     {
@@ -30,13 +31,6 @@
                 } else {
                     response.sendStatus(500);
                 }
-            });
-        });
-        router.route('/api/user').post(function (request, response)
-        {
-            userDAO.addUser(request.body).then(function (result)
-            {
-                response.status(200).send(result);
             });
         });
     };

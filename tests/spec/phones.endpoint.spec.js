@@ -1,56 +1,83 @@
-describe('phones,endpoint', function ()
+describe('phones.endpoint', function ()
 {
     'use strict';
 
     var superTest = require('supertest')(require('../../app/index.js'));
     var testHelper = require('../testHelper');
-    var sha1 = require('sha1');
-    describe('POST /api/phones', function ()
+
+    describe('GET /api/phones',function()
     {
-        var phone = {model: 'New phones', brand: 'new brand mock'};
-        describe('when user is authenticated', function ()
+        var phones = [{model: 'New phones', brand: 'new brand mock'}];
+        describe('when authorized',function()
         {
             var token;
             beforeEach(function (done)
             {
                 superTest.post('/api/user/auth').set('Content-type', 'application/json').send({email: 'mock@email.com', password: 'simplePassword'})
-                        .end(function (error,
-                                       response)
-                        {
-                            if (error) {
-                                done(error);
-                            }
-                            token = 'Token ' + response.body.token;
-                            done();
-                        });
+                    .end(function (error,
+                                   response)
+                    {
+                        if (error) {
+                            done(error);
+                        }
+                        token = 'Token ' + response.body.token;
+                        done();
+                    });
+            });
+
+            it('should respond with 200 and all elements', function (done)
+            {
+                superTest.get('/api/phones').set('Authorization', token).expect(200).end(function(error, response)
+                {
+                    if (response.body.results && testHelper.isEquals(phones, response.body.results, ['_id'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+        describe('when not authorized',function()
+        {
+            it('should respond with 200 and all elements', function (done)
+            {
+                superTest.get('/api/phones').expect(200).end(function(error, response)
+                {
+                    if (response.body.results && testHelper.isEquals(phones, response.body.results, ['_id'])) {
+                        done();
+                    } else {
+                        done('Results is NOT equals');
+                    }
+                });
+            });
+        });
+    });
+    describe('POST /api/phones', function ()
+    {
+        describe('when authorized', function ()
+        {
+            var phone = {model: 'New phones', brand: 'new brand mock'};
+            var token;
+            beforeEach(function (done)
+            {
+                superTest.post('/api/user/auth').set('Content-type', 'application/json').send({email: 'mock@email.com', password: 'simplePassword'})
+                    .end(function (error,
+                                   response)
+                    {
+                        if (error) {
+                            done(error);
+                        }
+                        token = 'Token ' + response.body.token;
+                        done();
+                    });
             });
             describe('when we add one element without _id', function ()
             {
-                beforeEach(function (done)
-                {
-                    superTest.post('/api/phones').set('Authorization', token).send(phone).end(done);
-                });
-
-                it('should response 201 and this element', function (done)
+                it('should respond with 201 and this element', function (done)
                 {
                     superTest.post('/api/phones').set('Authorization', token).send(phone).expect(201).end(function (error, response)
                     {
                         if (response.body.results && testHelper.isEquals(phone, response.body.results, ['_id'])) {
-                            done();
-                        } else {
-                            done('Results is NOT equals');
-                        }
-                    });
-                });
-
-                it('should response array with 1 element', function (done)
-                {
-                    superTest.get('/api/phones').set('Authorization', token).expect(200).end(function (error, response)
-                    {
-                        var phones = [{_id: 1, model: 'New phones', brand: 'new brand mock'},
-                            {_id: 2, model: 'New phones', brand: 'new brand mock'},
-                            {_id: 3, model: 'New phones', brand: 'new brand mock'}];
-                        if (3 === response.body.results.length && testHelper.isEquals(phones, response.body.results)) {
                             done();
                         } else {
                             done('Results is NOT equals');
@@ -86,17 +113,24 @@ describe('phones,endpoint', function ()
                 });
             });
         });
-        describe('when user is NOT authorized', function ()
+        describe('when not authorized', function ()
         {
-            it('should response 401 and NOT add element to DB', function (done)
+            var phone = {model: 'New phones', brand: 'new brand mock'};
+            var phones;
+            beforeEach(function (done)
+            {
+                superTest.get('/api/phones').expect(200).end(function (error, response)
+                {
+                    phones = response.body.results;
+                    done();
+                });
+            });
+            it('should respond with 401 and don\'t add element to DB', function (done)
             {
                 superTest.post('/api/phones').send(phone).expect(401).end(function ()
                 {
                     superTest.get('/api/phones').expect(200).end(function (error, response)
                     {
-                        var phones = [{_id: 1, model: 'Test test', brand: 'mock mock'},
-                            {_id: 2, model: 'New phones', brand: 'new brand mock'},
-                            {_id: 3, model: 'New phones', brand: 'new brand mock'}];
                         if (response.body.results && testHelper.isEquals(phones, response.body.results)) {
                             done();
                         } else {
@@ -106,9 +140,9 @@ describe('phones,endpoint', function ()
                 });
             });
         });
-        describe('when user have fake toke', function ()
+        describe('when given fake token', function ()
         {
-            it('should get response 401', function (done)
+            it('should respond with 401', function (done)
             {
                 var token='Token asdsdsfdgsfg';
                 superTest.post('/api/phones').set('Authorization', token).expect(401).end(done);
@@ -117,23 +151,23 @@ describe('phones,endpoint', function ()
     });
     describe('GET /api/phones/:id', function ()
     {
-        describe('when user is authorized', function ()
+        describe('when authorized', function ()
         {
             var token;
             beforeEach(function (done)
             {
                 superTest.post('/api/user/auth').set('Content-type', 'application/json').send({email: 'mock@email.com', password: 'simplePassword'})
-                        .end(function (error,
-                                       response)
-                        {
-                            if (error) {
-                                done(error);
-                            }
-                            token = 'Token ' + new Buffer(response.body.token.toString()).toString('base64');
-                            done();
-                        });
+                    .end(function (error,
+                                   response)
+                    {
+                        if (error) {
+                            done(error);
+                        }
+                        token = 'Token ' + response.body.token;
+                        done();
+                    });
             });
-            describe('when we get id first element in the array', function ()
+            describe('when we get details of first element', function ()
             {
                 var phoneId, phone;
                 beforeEach(function (done)
@@ -145,33 +179,7 @@ describe('phones,endpoint', function ()
                         done();
                     });
                 });
-                it('should response 200 and details first phone', function (done)
-                {
-                    superTest.get('/api/phones/' + phoneId).set('Authorization', token).expect(200).end(function (error, response)
-                    {
-                        console.log('asd');
-                        console.log(response.body);
-                        if (response.body.results && testHelper.isEquals(phone, response.body.results)) {
-                            done();
-                        } else {
-                            done('Results is NOT equals');
-                        }
-                    });
-                });
-            });
-            xdescribe('when we get id third element in array', function ()
-            {
-                var phoneId, phone;
-                beforeEach(function (done)
-                {
-                    superTest.get('/api/phones').set('Authorization', token).end(function (error, response)
-                    {
-                        phone = response.body.results[2];
-                        phoneId = response.body.results[2]._id;
-                        done();
-                    });
-                });
-                it('should response 200 and details first phone', function (done)
+                it('should respond with 200 and details of first phone', function (done)
                 {
                     superTest.get('/api/phones/' + phoneId).set('Authorization', token).expect(200).end(function (error, response)
                     {
@@ -184,9 +192,9 @@ describe('phones,endpoint', function ()
                 });
             });
         });
-        xdescribe('when user is NOT authorized', function ()
+        describe('when not authorized', function ()
         {
-            it('should response 401', function (done)
+            it('should respond with 401', function (done)
             {
                 var phoneId;
                 superTest.get('/api/phones').expect(200).end(function (error, response)
@@ -197,23 +205,23 @@ describe('phones,endpoint', function ()
             });
         });
     });
-    xdescribe('DELETE /api/phones/:id', function ()
+    describe('DELETE /api/phones/:id', function ()
     {
-        describe('when user is authorized', function ()
+        describe('when authorized', function ()
         {
             var token;
             beforeEach(function (done)
             {
                 superTest.post('/api/user/auth').set('Content-type', 'application/json').send({email: 'mock@email.com', password: 'simplePassword'})
-                        .end(function (error,
-                                       response)
-                        {
-                            if (error) {
-                                done(error);
-                            }
-                            token = 'Token ' + new Buffer(response.body.token.toString()).toString('base64');
-                            done();
-                        });
+                    .end(function (error,
+                                   response)
+                    {
+                        if (error) {
+                            done(error);
+                        }
+                        token = 'Token ' + response.body.token;
+                        done();
+                    });
             });
             var phoneId;
             beforeEach(function (done)
@@ -224,17 +232,16 @@ describe('phones,endpoint', function ()
                     done();
                 });
             });
-            it('should response 200 and remove this element in db', function (done)
+            it('should respond with 200 and remove this element in db', function (done)
             {
                 superTest.get('/api/phones').end(function (error, respond)
                 {
                     superTest.delete('/api/phones/' + phoneId).set('Authorization', token).expect(200).end(function (error, response)
                     {
-
                         if (testHelper.isEquals({}, response.body)) {
                             superTest.get('/api/phones').end(function (error, response)
                             {
-                                if (2 === response.body.results.length && 3 === respond.body.results.length) {
+                                if (respond.body.results.length - 1 === response.body.results.length) {
                                     done();
                                 } else {
                                     done('Length results is NOT correct');
@@ -247,23 +254,23 @@ describe('phones,endpoint', function ()
                 });
             });
         });
-        describe('when user is NOT authorized', function ()
+        describe('when not authorized', function ()
         {
             var token;
             beforeEach(function (done)
             {
                 superTest.post('/api/user/auth').set('Content-type', 'application/json').send({email: 'mock@email.com', password: 'simplePassword'})
-                        .end(function (error,
-                                       response)
-                        {
-                            if (error) {
-                                done(error);
-                            }
-                            token = 'Token ' + new Buffer(response.body.token.toString()).toString('base64');
-                            done();
-                        });
+                    .end(function (error,
+                                   response)
+                    {
+                        if (error) {
+                            done(error);
+                        }
+                        token = 'Token ' + response.body.token;
+                        done();
+                    });
             });
-            it('should response 401 and NOT remove data', function (done)
+            it('should respond with 401 and don\'t remove data', function (done)
             {
                 var phoneId;
                 superTest.get('/api/phones').expect(200).end(function (error, response)

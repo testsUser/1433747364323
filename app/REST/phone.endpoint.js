@@ -44,7 +44,6 @@
             security.isAuthenticated( request.authorized ).then( function() {
                 return phoneDAO.getDetails(request.params.id).then(function (results)
                 {
-                    console.log('- - - authorized', results);
                     respond.status(200).send(results);
                 })
             } ).catch(function (error)

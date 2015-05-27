@@ -19,7 +19,6 @@
     {
         var defer = q.defer();
         for (var i = 0; i < tokens.length; i++) {
-            //console.log('- - token', token, '\n- - - asd', tokens[i]._id);
             if (token === tokens[i]._id.toString()) {
                 defer.resolve(tokens[i]);
             } else if (i === tokens.length - 1) {
