@@ -12,6 +12,7 @@ Please follow the guidelines:
 - We wanna get permission to displaying all phones for anyone, so make **GET /api/phones** endpoint only one which is unsecured
 - All other endpoints should be accessible with token only.
 - Token structure should be like e.g. `Token R28gYmFjayB0byB5b3VyIHRhc2sgTU9GTyE=`. We just wanna to check this token while interacting with API.
+- Increase **POST /api/user/auth** endpoint working.
 - You can use prepared DAOs
 
 
